@@ -3,14 +3,16 @@ import express from 'express';
 import helmet from 'helmet';
 import rateLimit from 'express-rate-limit';
 import multer from 'multer';
-import { config, assertConfig } from './config.js';
+import { config, configProblems } from './config.js';
 import { customer } from './routes/customer.js';
 import { internal } from './routes/internal.js';
 import { account } from './routes/account.js';
 import { runRetention } from './retention.js';
 import { safeEqual } from './auth.js';
 
-assertConfig();
+// Don't crash on bad setup: report exactly which settings are missing (names only, never values).
+const setupProblems = configProblems();
+if (setupProblems.length) console.error('[setup] Missing configuration:\n - ' + setupProblems.join('\n - '));
 
 export const CSP = {
   'default-src': ["'self'"],
@@ -37,7 +39,13 @@ app.use((req, res, next) => {
 
 const limiter = (limit) => rateLimit({ windowMs: 60_000, limit, standardHeaders: 'draft-8', legacyHeaders: false });
 
-app.get('/api/healthz', (req, res) => res.json({ ok: true }));
+app.get('/api/healthz', (req, res) => {
+  res.status(setupProblems.length ? 503 : 200).json({ ok: !setupProblems.length, problems: setupProblems });
+});
+
+app.use('/api', (req, res, next) => (setupProblems.length
+  ? res.status(503).json({ error: 'SETUP_INCOMPLETE', problems: setupProblems })
+  : next()));
 
 app.get('/api/cron/retention', async (req, res, next) => {
   const bearer = (req.get('authorization') || '').replace(/^Bearer /, '');
@@ -58,5 +66,9 @@ app.use((err, req, res, next) => {
   }
   if (err.type === 'entity.parse.failed') return res.status(400).json({ error: 'BAD_JSON' });
   console.error(err);
+  // Database unreachable / wrong credentials / wrong database name.
+  if (['ENOTFOUND', 'ECONNREFUSED', 'ETIMEDOUT', 'ECONNRESET', '28P01', '28000', '3D000'].includes(err.code)) {
+    return res.status(503).json({ error: 'DATABASE_UNAVAILABLE' });
+  }
   res.status(500).json({ error: 'INTERNAL' });
 });

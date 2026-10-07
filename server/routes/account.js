@@ -1,7 +1,7 @@
 // Customer accounts: OTP login + "my verifications".
 import express from 'express';
 import crypto from 'node:crypto';
-import { showDevOtp } from '../config.js';
+import { showDevOtp, demoMode } from '../config.js';
 import { query, one, now } from '../db.js';
 import {
   otpHash, safeEqual, normalisePhone, maskPhone, setLoginCookie, clearLoginCookie, requireUser,
@@ -19,6 +19,8 @@ const MAX_SENDS_PER_HOUR = 5;
 const MAX_ATTEMPTS = 5;
 
 /* ---------- Login ---------- */
+account.get('/auth/config', (req, res) => res.json({ demo: demoMode() }));
+
 account.post('/auth/otp', wrap(async (req, res) => {
   const phone = normalisePhone(req.body?.phone);
   if (!phone) return res.status(400).json({ error: 'INVALID_PHONE' });

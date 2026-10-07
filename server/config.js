@@ -86,22 +86,28 @@ export const config = {
 
 export const isProd = config.env === 'production';
 
-export function assertConfig() {
+/** Setup problems as plain-English messages naming the env var (never its value). */
+export function configProblems() {
   const problems = [];
-  if (config.internalApiKey.length < 24) problems.push('INTERNAL_API_KEY must be set (24+ random characters).');
-  if (config.sessionSecret.length < 32) problems.push('SESSION_SECRET must be set (32+ random characters).');
-  if (isProd) {
-    if (!config.publicBaseUrl.startsWith('https://')) problems.push('PUBLIC_BASE_URL must be https:// in production.');
-    if (!config.databaseUrl) problems.push('DATABASE_URL (Postgres) is required in production.');
-    if (config.onVercel && !config.blobToken) problems.push('BLOB_READ_WRITE_TOKEN is required on Vercel (create a Blob store).');
-    if (config.onVercel && !config.cronSecret) problems.push('CRON_SECRET is required on Vercel.');
-    if (config.smsProvider === 'console' && env.ALLOW_CONSOLE_OTP !== 'true') {
-      problems.push('SMS_PROVIDER must be msg91 or twilio in production (or set ALLOW_CONSOLE_OTP=true for a demo).');
-    }
-    if (config.webhookUrl && !config.webhookSecret) problems.push('WEBHOOK_SECRET is required when WEBHOOK_URL is set.');
+  if (config.internalApiKey.length < 24) problems.push('INTERNAL_API_KEY is missing (needs 24+ random characters)');
+  if (config.sessionSecret.length < 32) problems.push('SESSION_SECRET is missing (needs 32+ random characters)');
+  if (config.onVercel || isProd) {
+    if (!config.publicBaseUrl.startsWith('https://')) problems.push('PUBLIC_BASE_URL must start with https://');
+    if (!config.databaseUrl) problems.push('DATABASE_URL is missing (Vercel → Storage → connect Neon Postgres)');
+    if (config.onVercel && !config.blobToken) problems.push('BLOB_READ_WRITE_TOKEN is missing (Vercel → Storage → connect Blob)');
+    if (config.smsProvider === 'msg91' && (!config.msg91AuthKey || !config.msg91TemplateId)) problems.push('MSG91_AUTH_KEY / MSG91_TEMPLATE_ID are missing');
+    if (config.smsProvider === 'twilio' && (!config.twilioSid || !config.twilioToken || !config.twilioFrom)) problems.push('TWILIO_ACCOUNT_SID / TWILIO_AUTH_TOKEN / TWILIO_FROM are missing');
+    if (config.webhookUrl && !config.webhookSecret) problems.push('WEBHOOK_SECRET is missing (required when WEBHOOK_URL is set)');
   }
+  return problems;
+}
+
+export function assertConfig() {
+  const problems = configProblems();
   if (problems.length) throw new Error('Invalid configuration:\n - ' + problems.join('\n - '));
 }
 
-// Dev OTP display is allowed outside production, or when explicitly enabled for a demo deployment.
-export const showDevOtp = () => config.smsProvider === 'console' && (!isProd || env.ALLOW_CONSOLE_OTP === 'true');
+// Demo login: no SMS provider configured -> no SMS is sent and the code is shown on screen.
+// Anyone can log in as any number in this mode: use it for demos/reviews only, never with real customers.
+export const demoMode = () => config.smsProvider === 'console';
+export const showDevOtp = demoMode;

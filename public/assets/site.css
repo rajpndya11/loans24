@@ -131,3 +131,4 @@ footer.site a { color: #CFE3F5; }
 .toolbar { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-bottom: 18px; flex-wrap: wrap; }
 .pin { font-size: 32px; }
 .center { text-align: center; }
+.otp-show { font: 800 34px 'Poppins', sans-serif; letter-spacing: 8px; margin: 6px 0; color: #146239; }
