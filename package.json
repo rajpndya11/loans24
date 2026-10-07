@@ -1,0 +1,28 @@
+{
+  "name": "loans24-premises-verify",
+  "version": "0.2.0",
+  "private": true,
+  "description": "Customer-led premises verification: home page, OTP login, capture app, verification API, review console.",
+  "type": "module",
+  "engines": {
+    "node": "24.x"
+  },
+  "scripts": {
+    "start": "node --env-file-if-exists=.env server/local.js",
+    "dev": "node --watch --env-file-if-exists=.env server/local.js",
+    "create-session": "node --env-file-if-exists=.env scripts/create-session.js",
+    "smoke": "node --env-file-if-exists=.env scripts/smoke.js",
+    "test": "node --test \"test/**/*.test.js\""
+  },
+  "dependencies": {
+    "@electric-sql/pglite": "^0.5.8",
+    "@vercel/blob": "^2.8.1",
+    "@vercel/functions": "^3.9.11",
+    "express": "^5.2.1",
+    "express-rate-limit": "^8.7.1",
+    "helmet": "^8.3.0",
+    "multer": "^2.4.0",
+    "pg": "^8.23.1",
+    "sharp": "^0.35.5"
+  }
+}

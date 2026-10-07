@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#00335E">
+<meta name="robots" content="noindex">
+<title>My account · Loans24</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;700;800&family=Inter:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="/assets/site.css">
+</head>
+<body>
+<nav class="nav">
+  <div class="wrap">
+    <a class="brand" href="/"><span class="mark">24</span><b>Loans24</b></a>
+    <div class="nav-links">
+      <span class="hide-sm" id="who"></span>
+      <button class="btn btn-outline btn-sm" id="logoutBtn" type="button">Logout</button>
+    </div>
+  </div>
+</nav>
+
+<main class="page">
+  <div class="wrap narrow">
+
+    <!-- List -->
+    <section id="listView" class="hidden">
+      <div class="toolbar">
+        <h2 id="greeting">My verifications</h2>
+        <button class="btn btn-primary" id="newBtn" type="button">+ Verify an address</button>
+      </div>
+      <div id="list" class="list"></div>
+    </section>
+
+    <!-- New verification form -->
+    <section id="formView" class="hidden">
+      <button class="btn btn-ghost" data-go="list" type="button">← Back</button>
+      <div class="card">
+        <h2>Verify an address</h2>
+        <p class="muted">Fill this in exactly as on your loan application.</p>
+        <form id="vForm" novalidate>
+          <div class="field">
+            <span class="label">What are you verifying?</span>
+            <div class="options" role="radiogroup">
+              <label class="option"><input type="radio" name="placeType" value="home" checked>
+                <span class="ic" aria-hidden="true">🏠</span><span><b>My home</b><span class="sub">Photos of your entrance and nameplate, plus a short video.</span></span></label>
+              <label class="option"><input type="radio" name="placeType" value="shop">
+                <span class="ic" aria-hidden="true">🏪</span><span><b>My shop or office</b><span class="sub">Photos of your shop front and signboard, plus a short video.</span></span></label>
+              <label class="option"><input type="radio" name="placeType" value="homeoffice">
+                <span class="ic" aria-hidden="true">💻</span><span><b>My home, which I also work from</b><span class="sub">Only your entrance and nameplate. No inside photos.</span></span></label>
+            </div>
+            <div class="err hidden" data-err="placeType"></div>
+          </div>
+
+          <div class="field">
+            <label for="fullName">Your full name</label>
+            <input class="input" id="fullName" name="fullName" autocomplete="name" required>
+            <div class="err hidden" data-err="fullName"></div>
+          </div>
+
+          <div class="field hidden" id="bizField">
+            <label for="businessName">Shop / business name</label>
+            <input class="input" id="businessName" name="businessName" autocomplete="organization">
+            <div class="hint">As written on your signboard.</div>
+            <div class="err hidden" data-err="businessName"></div>
+          </div>
+
+          <div class="field">
+            <label for="line1">House / flat / shop no. and building</label>
+            <input class="input" id="line1" name="line1" autocomplete="address-line1" placeholder="e.g. Flat 402, Shanti Apartments" required>
+            <div class="err hidden" data-err="line1"></div>
+          </div>
+          <div class="field">
+            <label for="area">Area / locality</label>
+            <input class="input" id="area" name="area" autocomplete="address-line2" placeholder="e.g. Andheri East" required>
+            <div class="err hidden" data-err="area"></div>
+          </div>
+          <div class="row2">
+            <div class="field">
+              <label for="city">City</label>
+              <input class="input" id="city" name="city" autocomplete="address-level2" required>
+              <div class="err hidden" data-err="city"></div>
+            </div>
+            <div class="field">
+              <label for="pincode">Pincode</label>
+              <input class="input" id="pincode" name="pincode" inputmode="numeric" autocomplete="postal-code" maxlength="6" required>
+              <div class="err hidden" data-err="pincode"></div>
+            </div>
+          </div>
+
+          <div class="field">
+            <label for="lang">Language for the next steps</label>
+            <select class="input" id="lang" name="lang">
+              <option value="en">English</option>
+              <option value="hi">हिंदी (Hindi)</option>
+              <option value="mr">मराठी (Marathi)</option>
+              <option value="ta">தமிழ் (Tamil)</option>
+              <option value="te">తెలుగు (Telugu)</option>
+            </select>
+          </div>
+
+          <div class="field">
+            <label class="check"><input type="checkbox" id="assist" name="assist">
+              <span>Read the steps aloud to me and use bigger text</span></label>
+          </div>
+
+          <div class="field">
+            <label for="loanRef">Loan application number <span class="muted">(optional)</span></label>
+            <input class="input" id="loanRef" name="loanRef">
+          </div>
+
+          <div class="notice bad hidden" id="formErr"></div>
+          <button class="btn btn-primary btn-block" id="checkBtn" type="submit">Continue</button>
+        </form>
+      </div>
+    </section>
+
+    <!-- Confirm -->
+    <section id="confirmView" class="hidden">
+      <div class="card center">
+        <div class="pin" aria-hidden="true">📍</div>
+        <h2 id="confirmTitle"></h2>
+        <p id="confirmLabel" class="muted"></p>
+        <div class="notice info">Please be <b>at this address, standing at the entrance</b>, when you take the photos. Your phone's location is checked.</div>
+        <div class="notice bad hidden" id="startErr"></div>
+        <button class="btn btn-primary btn-block" id="startBtn" type="button">I'm at this address — start</button>
+        <p><button class="btn btn-ghost" data-go="form" type="button">Edit address</button></p>
+      </div>
+    </section>
+
+  </div>
+</main>
+
+<script type="module" src="/assets/account.js"></script>
+</body>
+</html>
