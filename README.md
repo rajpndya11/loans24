@@ -50,7 +50,8 @@ Go to **Project → Settings → Environment Variables** and add these for **Pro
 | `NODE_ENV` | `production` |
 | `INTERNAL_API_KEY` | a random string (see command below) |
 | `SESSION_SECRET` | another random string |
-| `CRON_SECRET` | another random string (optional, enables daily clean-up) |
+| `CRON_SECRET` | another random string |
+| `SMS_PROVIDER` | `msg91` or `twilio` (see step 5) |
 
 To generate each random string, run:
 
@@ -58,12 +59,10 @@ To generate each random string, run:
 node -e "console.log(require('crypto').randomBytes(32).toString('base64url'))"
 ```
 
-> **Demo mode (default):** while `SMS_PROVIDER` is not set, the login page pre-fills a random demo number, sends no SMS and shows the code on screen.
-> **Anyone can log in, so use this for reviews only, never with real customers.**
+> **Just want a demo first, with no SMS provider?** Add `ALLOW_CONSOLE_OTP` = `true` and leave out `SMS_PROVIDER`.
+> The login code is then shown on screen. **Anyone can log in with any number, so never use this with real customers.**
 
-> **Something not working?** Open `https://<your-site>/api/healthz`. It lists exactly which settings are missing. The login page shows the same message.
-
-### 5. SMS for login codes (real launch, optional for demos)
+### 5. SMS for login codes (real launch)
 
 Indian law requires sending OTP SMS through a DLT-registered sender. The easiest route:
 1. Create a [MSG91](https://msg91.com) account and complete DLT registration (sender ID plus an OTP template).
@@ -149,7 +148,7 @@ Results are POSTed to `WEBHOOK_URL`, signed with `X-Signature: sha256=HMAC(body,
 - [ ] **Compliance sign-off:** confirm that customer-led photo + GPS verification can replace a field visit under RBI Digital Lending / KYC rules.
 - [ ] **Legal:** write the real privacy notice (`public/privacy.html` is a placeholder) and approve the consent text (`public/v/i18n.js`).
 - [ ] **Native-speaker check** of the Hindi, Marathi, Tamil and Telugu text.
-- [ ] **Real SMS provider** (MSG91/Twilio with DLT), which turns off demo mode.
+- [ ] **Real SMS provider** (MSG91/Twilio with DLT). Remove `ALLOW_CONSOLE_OTP`.
 - [ ] **Photo storage:** Vercel Blob URLs are unguessable but public. For real customer data, move to a private bucket (e.g. AWS S3 Mumbai) by editing `server/storage.js`.
 - [ ] **Review console login:** it currently uses a shared API key. Put `/admin` behind company SSO with per-reviewer accounts.
 - [ ] **Map lookups:** add `GOOGLE_MAPS_API_KEY` before high volume (OpenStreetMap allows ~1 lookup per second).

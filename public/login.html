@@ -19,10 +19,7 @@
     <div class="card">
       <form id="phoneForm" novalidate>
         <h2>Login</h2>
-        <p class="muted" id="loginIntro">Enter your mobile number. We'll send you a 6-digit code by SMS.</p>
-        <div class="notice info hidden" id="demoBanner">
-          <b>Demo mode</b> — no SMS is sent. A demo mobile number is filled in for you and the login code will appear on screen.
-        </div>
+        <p class="muted">Enter your mobile number. We'll send you a 6-digit code by SMS.</p>
         <div class="field">
           <label for="phone">Mobile number</label>
           <div class="phone-row">
@@ -39,11 +36,7 @@
       <form id="otpForm" class="hidden" novalidate>
         <h2>Enter code</h2>
         <p class="muted">We sent a 6-digit code to <b id="sentTo"></b>. <button class="btn btn-ghost" id="changeBtn" type="button">Change number</button></p>
-        <div class="notice ok center hidden" id="devNotice">
-          Your login code
-          <div class="otp-show" id="devCode"></div>
-          <span class="small">Demo mode — this code is shown here instead of being sent by SMS.</span>
-        </div>
+        <div class="notice info hidden" id="devNotice"></div>
         <div class="field">
           <label for="otp">6-digit code</label>
           <input class="input otp-input" id="otp" name="otp" type="text" inputmode="numeric" autocomplete="one-time-code"

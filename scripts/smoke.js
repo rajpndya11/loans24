@@ -1,9 +1,8 @@
 // End-to-end smoke test against a running server (local or deployed).
 // Covers: OTP login -> address form -> capture -> submit, plus the loan-system API and reviewer decision.
-// Usage: npm run smoke            (needs demo mode: SMS_PROVIDER not set)
+// Usage: npm run smoke            (OTP step needs SMS_PROVIDER=console / ALLOW_CONSOLE_OTP=true)
 import sharp from 'sharp';
 import assert from 'node:assert/strict';
-import crypto from 'node:crypto';
 
 const base = process.env.SMOKE_URL || process.env.PUBLIC_BASE_URL || `http://localhost:${process.env.PORT || 8080}`;
 const key = process.env.INTERNAL_API_KEY;
@@ -21,22 +20,12 @@ async function call(path, { token, apiKey, method = 'GET', json, form } = {}) {
   return { status: res.status, body: await res.json().catch(() => null) };
 }
 
-// Well-lit, textured image that passes sharpness/brightness. A random coarse layout plus fine noise makes
-// every photo genuinely different, so the duplicate-image check doesn't (correctly) flag test photos.
-async function testPhoto(_seed, { dark = false } = {}) {
+// Textured, well-lit image so it passes sharpness/brightness; seed makes each one unique.
+async function testPhoto(seed, { dark = false } = {}) {
   const w = 800, h = 1000;
-  const coarse = crypto.randomBytes(8 * 10 * 3);
-  const noise = crypto.randomBytes(w * h * 3);
   const px = Buffer.alloc(w * h * 3);
-  for (let y = 0; y < h; y++) {
-    for (let x = 0; x < w; x++) {
-      for (let c = 0; c < 3; c++) {
-        const i = (y * w + x) * 3 + c;
-        const block = coarse[(Math.floor(y / 100) * 8 + Math.floor(x / 100)) * 3 + c];
-        px[i] = dark ? noise[i] % 20 : 40 + (block % 120) + (noise[i] % 60);
-      }
-    }
-  }
+  let x = seed * 7919;
+  for (let i = 0; i < px.length; i++) { x = (x * 1103515245 + 12345) & 0x7fffffff; px[i] = dark ? x % 20 : 60 + (x % 140); }
   return sharp(px, { raw: { width: w, height: h, channels: 3 } }).jpeg().toBuffer();
 }
 
@@ -74,7 +63,7 @@ assert.equal((await call('/api/me')).status, 401);
 assert.equal((await call('/api/auth/otp', { method: 'POST', json: { phone: '12345' } })).status, 400);
 const otp = await call('/api/auth/otp', { method: 'POST', json: { phone: '+91 98765 43210' } });
 assert.equal(otp.status, 200, JSON.stringify(otp.body));
-assert.ok(otp.body.devCode, 'devCode missing: the smoke test needs demo mode (leave SMS_PROVIDER unset)');
+assert.ok(otp.body.devCode, 'devCode missing: set SMS_PROVIDER=console (or ALLOW_CONSOLE_OTP=true) for the smoke test');
 const wrong = await call('/api/auth/verify', { method: 'POST', json: { phone: '9876543210', code: otp.body.devCode === '000000' ? '111111' : '000000' } });
 assert.equal(wrong.status, 400);
 assert.equal((await call('/api/auth/verify', { method: 'POST', json: { phone: '9876543210', code: otp.body.devCode } })).status, 200);
